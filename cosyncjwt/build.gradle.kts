@@ -1,20 +1,20 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
-	id(BuildPlugins.androidLibrary)
-	kotlin(BuildPlugins.kotlinAndroid)
-	kotlin(BuildPlugins.kotlinKapt)
-	id(BuildPlugins.mavenPublish)
+	id("com.android.library")
+	id("org.jetbrains.kotlin.android")
+	id("kotlin-kapt")
+	id("maven-publish")
 }
 
 android {
-	namespace = CosyncJWT.namespace
-	compileSdk = Android.compileSdk
+	namespace = "com.cosync.cosyncjwt"
+	compileSdk = 33
 
 	defaultConfig {
-		minSdk = Android.minSdk
-		testInstrumentationRunner = TestLibraries.testRunner
-		consumerProguardFiles(Android.Progaurd.consumeFile)
+		minSdk = 21
+		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		consumerProguardFiles("consumer-rules.pro")
 	}
 
 	compileOptions {
@@ -33,39 +33,25 @@ android {
 	buildTypes {
 		getByName("release") {
 			isMinifyEnabled = false
-			proguardFiles(getDefaultProguardFile(Android.Progaurd.optimizeFile), Android.Progaurd.rulesFile)
+			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 	}
 }
 
 dependencies {
-	implementation(Libraries.kotlinStdLib)
+	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20")
 
-	// Unit Testing
-	testImplementation(TestLibraries.junit)
-	androidTestImplementation(TestLibraries.testExt)
-	androidTestImplementation(TestLibraries.espresso)
+	implementation("androidx.core:core-ktx:1.10.0")
+	implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+	implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+	implementation("com.squareup.retrofit2:retrofit:2.9.0")
+	implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+	implementation("com.google.dagger:dagger:2.45")
+	kapt("com.google.dagger:dagger-compiler:2.45")
 
-	// KTX
-	implementation(Libraries.ktxCore)
-
-	// OkHttp
-	implementation(Libraries.okhttp3)
-	implementation(Libraries.okhttp3Logging)
-
-	// Retrofit
-	implementation(Libraries.retrofit)
-	implementation(Libraries.retrofitGsonConverter)
-
-	// Dagger
-	implementation(Libraries.dagger)
-	kapt(Libraries.daggerCompiler)
-
-	// Gson
-	implementation(Libraries.gson)
-
-	// Guava
-	implementation(Libraries.guava)
+	testImplementation("junit:junit:4.13.2")
+	androidTestImplementation("androidx.test.ext:junit:1.2.0-alpha01")
+	androidTestImplementation("androidx.test.espresso:espresso-core:3.6.0-alpha01")
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -92,9 +78,9 @@ afterEvaluate {
 
 		publications {
 			create<MavenPublication>("cosyncjwt") {
-				groupId = Publishing.groupId
-				artifactId = Publishing.artifactId
-				version = Publishing.version
+				groupId = "com.cosync"
+				artifactId = "cosyncjwt"
+				version = "0.0.6"
 
 				artifact("$buildDir/outputs/aar/cosyncjwt-release.aar")
 				artifact(sourcesJar)

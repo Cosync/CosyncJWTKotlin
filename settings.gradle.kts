@@ -1,7 +1,19 @@
 pluginManagement {
+    //includeBuild("build-logic")
     repositories {
+        google()
+        mavenCentral()
         gradlePluginPortal()
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenLocal()
+
+        google()
+        mavenCentral()
     }
 }
 
