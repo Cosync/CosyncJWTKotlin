@@ -23,13 +23,17 @@ package com.cosync.cosyncjwt.repository
 
 import com.cosync.cosyncjwt.api.ChangePasswordBody
 import com.cosync.cosyncjwt.api.CosyncJWTService
+import com.cosync.cosyncjwt.api.DeleteAccountBody
 import com.cosync.cosyncjwt.api.ResetPasswordBody
 import com.cosync.cosyncjwt.api.Routes
 import com.cosync.cosyncjwt.api.SetPhoneBody
 import com.cosync.cosyncjwt.api.SetTwoFactorVerificationBody
+import com.cosync.cosyncjwt.api.SetUserMetadataBody
+import com.cosync.cosyncjwt.api.SetUserNameBody
 import com.cosync.cosyncjwt.api.VerifyPhoneBody
 import com.cosync.cosyncjwt.di.DaggerInjector
 import com.cosync.cosyncjwt.model.User
+import com.google.gson.JsonObject
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -109,5 +113,25 @@ class UserRepository {
 			accessToken,
 			SetTwoFactorVerificationBody(enable.toString())
 		)
+	}
+
+	suspend fun setUserMetadata(baseUrl: String, accessToken: String, metaData: String): Response<String> {
+		val url = "$baseUrl${Routes.setUserMetadata}"
+		return apiService.setUserMetadata(url, accessToken, SetUserMetadataBody(metaData))
+	}
+
+	suspend fun userNameAvailable(baseUrl: String, accessToken: String, userName: String): Response<JsonObject> {
+		val url = "$baseUrl${Routes.userNameAvailable}"
+		return apiService.userNameAvailable(url, accessToken, userName)
+	}
+
+	suspend fun setUserName(baseUrl: String, accessToken: String, userName: String): Response<String> {
+		val url = "$baseUrl${Routes.setUserName}"
+		return apiService.setUserName(url, accessToken, SetUserNameBody(userName))
+	}
+
+	suspend fun deleteAccount(baseUrl: String, accessToken: String, handle: String, password: String): Response<String> {
+		val url = "$baseUrl${Routes.deleteAccount}"
+		return apiService.deleteAccount(url, accessToken, DeleteAccountBody(handle, password.md5))
 	}
 }

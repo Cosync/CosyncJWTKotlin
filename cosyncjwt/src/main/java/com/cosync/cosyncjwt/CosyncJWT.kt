@@ -106,7 +106,6 @@ class CosyncJWT constructor(private val context: Context) {
 				response.body()?.let {
 					jwt = it.jwt.orEmpty()
 					accessToken = it.accessToken.orEmpty()
-					loginToken = it.loginToken.orEmpty()
 					Result.success(it)
 				} ?: Result.failure(CosyncJWTException("Something went wrong"))
 			} else {
@@ -176,6 +175,133 @@ class CosyncJWT constructor(private val context: Context) {
 		} catch (e: Exception) {
 			Result.failure(e)
 		}
+	}
+
+	private fun isPasswordValid(password: String, app: App): Boolean {
+		val minLength = app.passwordMinLength // minimum length of password
+		val minUpperCase = app.passwordMinUpper // minimum number of uppercase letters
+		val minLowerCase = app.passwordMinLower // minimum number of lowercase letters
+		val minDigits = app.passwordMinDigit // minimum number of digits
+		val minSpecialChars = app.passwordMinSpecial // minimum number of special characters
+
+		val upperCaseRegex = Regex("[A-Z]")
+		val lowerCaseRegex = Regex("[a-z]")
+		val digitRegex = Regex("\\d")
+		val specialCharRegex = Regex("[@%/\\\\'!#\$^?:()\\[\\]~`\\-_.,]")
+
+		return password.length >= minLength &&
+				password.count { upperCaseRegex.containsMatchIn(it.toString()) } >= minUpperCase &&
+				password.count { lowerCaseRegex.containsMatchIn(it.toString()) } >= minLowerCase &&
+				password.count { digitRegex.containsMatchIn(it.toString()) } >= minDigits &&
+				password.count { specialCharRegex.containsMatchIn(it.toString()) } >= minSpecialChars
+	}
+
+	suspend fun signup(handle: String, password: String, metaData: String?): Result<Authentication> {
+		var result: Result<Authentication> =
+			Result.failure(CosyncJWTException("Something went wrong"))
+
+		try {
+			if (appToken.isEmpty() || cosyncRestAddress.isEmpty()) {
+				result = Result.failure(CosyncJWTException("Not configured yet"))
+			} else {
+				val appResponse = authRepository.getApplication(cosyncRestAddress, appToken)
+				if (appResponse.isSuccessful) {
+					appResponse.body()?.let { app ->
+						var passwordValid = true
+						if (app.passwordFilter) {
+							passwordValid = isPasswordValid(password, app)
+						}
+						if (passwordValid) {
+							val response = authRepository.signup(cosyncRestAddress, appToken, handle, password, metaData)
+							if (response.isSuccessful) {
+								if (app.signupFlow == "none") {
+									response.body()?.let { auth ->
+										jwt = auth.jwt.orEmpty()
+										accessToken = auth.accessToken.orEmpty()
+										result = Result.success(auth)
+									}
+								}
+							}
+						} else {
+							result = Result.failure(CosyncJWTException("Password invalid"))
+						}
+					}
+				}
+			}
+		} catch (e: Exception) {
+			result = Result.failure(e)
+		}
+		return result
+	}
+
+	suspend fun completeSignup(handle: String, code: String): Result<Authentication> {
+		return try {
+			val response = authRepository.completeSignup(cosyncRestAddress, appToken, handle, code)
+			if (response.isSuccessful) {
+				response.body()?.let {
+					jwt = it.jwt.orEmpty()
+					accessToken = it.accessToken.orEmpty()
+					Result.success(it)
+				} ?: Result.failure(CosyncJWTException("Something went wrong"))
+			} else {
+				Result.failure(CosyncJWTException("Something went wrong"))
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	suspend fun invite(handle: String, metaData: String?, senderUserId: String?): Result<Boolean> {
+		return try {
+			val response = authRepository.invite(cosyncRestAddress, appToken, handle, metaData, senderUserId)
+			if (response.isSuccessful) {
+				response.body()?.let {
+					Result.success(it.toBoolean())
+				} ?: Result.failure(CosyncJWTException("Something went wrong"))
+			} else {
+				Result.failure(CosyncJWTException("Something went wrong"))
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	suspend fun register(handle: String, password: String, metaData: String?, code: String): Result<Authentication> {
+		var result: Result<Authentication> =
+			Result.failure(CosyncJWTException("Something went wrong"))
+
+		try {
+			if (appToken.isEmpty() || cosyncRestAddress.isEmpty()) {
+				result = Result.failure(CosyncJWTException("Not configured yet"))
+			} else {
+				val appResponse = authRepository.getApplication(cosyncRestAddress, appToken)
+				if (appResponse.isSuccessful) {
+					appResponse.body()?.let { app ->
+						var passwordValid = true
+						if (app.passwordFilter) {
+							passwordValid = isPasswordValid(password, app)
+						}
+						if (passwordValid) {
+							val response = authRepository.register(cosyncRestAddress, appToken, handle, password, metaData, code)
+							if (response.isSuccessful) {
+								if (app.signupFlow == "none") {
+									response.body()?.let { auth ->
+										jwt = auth.jwt.orEmpty()
+										accessToken = auth.accessToken.orEmpty()
+										result = Result.success(auth)
+									}
+								}
+							}
+						} else {
+							result = Result.failure(CosyncJWTException("Password invalid"))
+						}
+					}
+				}
+			}
+		} catch (e: Exception) {
+			result = Result.failure(e)
+		}
+		return result
 	}
 
 	suspend fun getUser(): Result<User> {
@@ -322,9 +448,86 @@ class CosyncJWT constructor(private val context: Context) {
 		}
 	}
 
+	suspend fun setUserMetadata(metaData: String): Result<Boolean> {
+		return try {
+			if (accessToken.isEmpty()) {
+				Result.failure(CosyncJWTException("No access token"))
+			} else {
+				val response = userRepository.setUserMetadata(cosyncRestAddress, accessToken, metaData)
+				if (response.isSuccessful) {
+					response.body()?.let {
+						Result.success(it.toBoolean())
+					} ?: Result.failure(CosyncJWTException("Something went wrong"))
+				} else {
+					Result.failure(CosyncJWTException("Something went wrong"))
+				}
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	suspend fun userNameAvailable(userName: String): Result<Boolean> {
+		return try {
+			if (accessToken.isEmpty()) {
+				Result.failure(CosyncJWTException("No access token"))
+			} else {
+				val response = userRepository.userNameAvailable(cosyncRestAddress, accessToken, userName)
+				if (response.isSuccessful) {
+					response.body()?.let {
+						Result.success(it.asBoolean.or(false))
+					} ?: Result.failure(CosyncJWTException("Something went wrong"))
+				} else {
+					Result.failure(CosyncJWTException("Something went wrong"))
+				}
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	suspend fun setUserName(userName: String): Result<Boolean> {
+		return try {
+			if (accessToken.isEmpty()) {
+				Result.failure(CosyncJWTException("No access token"))
+			} else {
+				val response = userRepository.setUserName(cosyncRestAddress, accessToken, userName)
+				if (response.isSuccessful) {
+					response.body()?.let {
+						Result.success(it.toBoolean())
+					} ?: Result.failure(CosyncJWTException("Something went wrong"))
+				} else {
+					Result.failure(CosyncJWTException("Something went wrong"))
+				}
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	suspend fun deleteAccount(handle: String, password: String): Result<Boolean> {
+		return try {
+			if (accessToken.isEmpty()) {
+				Result.failure(CosyncJWTException("No access token"))
+			} else {
+				val response = userRepository.deleteAccount(cosyncRestAddress, accessToken, handle, password)
+				if (response.isSuccessful) {
+					response.body()?.let {
+						Result.success(it.toBoolean())
+					} ?: Result.failure(CosyncJWTException("Something went wrong"))
+				} else {
+					Result.failure(CosyncJWTException("Something went wrong"))
+				}
+			}
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
 	fun logout() {
 		jwt = ""
 		loginToken = ""
 		accessToken = ""
+		signedUserToken = ""
 	}
 }

@@ -26,27 +26,27 @@ import com.google.gson.annotations.SerializedName
 
 data class App(
 	@SerializedName("name")
-	val name: String? = "",
+	val name: String = "",
 	@SerializedName("signupFlow")
-	val signupFlow: String? = "code", // 'code', 'none', 'link'
+	val signupFlow: String = "code", // 'code', 'none', 'link'
 	@SerializedName("anonymousLoginEnabled")
-	val anonymousLoginEnabled: Boolean? = false,
+	val anonymousLoginEnabled: Boolean = false,
 	@SerializedName("userNamesEnabled")
-	val userNamesEnabled: Boolean? = false,
+	val userNamesEnabled: Boolean = false,
 	@SerializedName("twoFactorVerification")
-	val twoFactorVerification: String? = "none", // 'phone', 'google', 'none'
+	val twoFactorVerification: String = "none", // 'phone', 'google', 'none'
 	@SerializedName("passwordFilter")
-	val passwordFilter: String? = "",
+	val passwordFilter: Boolean = false,
 	@SerializedName("passwordMinLength")
-	val passwordMinLength: Int? = 8,
+	val passwordMinLength: Int = 8,
 	@SerializedName("passwordMinUpper")
-	val passwordMinUpper: Int? = 1,
+	val passwordMinUpper: Int = 1,
 	@SerializedName("passwordMinLower")
-	val passwordMinLower: Int? = 1,
+	val passwordMinLower: Int = 1,
 	@SerializedName("passwordMinDigit")
-	val passwordMinDigit: Int? = 1,
+	val passwordMinDigit: Int = 1,
 	@SerializedName("passwordMinSpecial")
-	val passwordMinSpecial: Int? = 1,
+	val passwordMinSpecial: Int = 1,
 	@SerializedName("appData")
 	var appData: JsonObject? = JsonObject(),
 )

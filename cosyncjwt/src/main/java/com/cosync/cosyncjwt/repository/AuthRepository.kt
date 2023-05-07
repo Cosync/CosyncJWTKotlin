@@ -23,10 +23,14 @@ package com.cosync.cosyncjwt.repository
 
 import com.cosync.cosyncjwt.api.CosyncJWTService
 import com.cosync.cosyncjwt.api.ForgotPasswordBody
+import com.cosync.cosyncjwt.api.InviteBody
 import com.cosync.cosyncjwt.api.LoginAnonymousBody
 import com.cosync.cosyncjwt.api.LoginBody
 import com.cosync.cosyncjwt.api.LoginCompleteBody
+import com.cosync.cosyncjwt.api.RegisterBody
 import com.cosync.cosyncjwt.api.Routes
+import com.cosync.cosyncjwt.api.SignupBody
+import com.cosync.cosyncjwt.api.SignupCompleteBody
 import com.cosync.cosyncjwt.di.DaggerInjector
 import com.cosync.cosyncjwt.model.App
 import com.cosync.cosyncjwt.model.Authentication
@@ -75,5 +79,25 @@ class AuthRepository {
 	suspend fun getApplication(baseUrl: String, appToken: String): Response<App> {
 		val url = "$baseUrl${Routes.getApplication}"
 		return apiService.getApplication(url, appToken)
+	}
+
+	suspend fun signup(baseUrl: String, appToken: String, handle: String, password: String, metaData: String?): Response<Authentication> {
+		val url = "$baseUrl${Routes.signup}"
+		return apiService.signup(url, appToken, SignupBody(handle, password.md5, metaData))
+	}
+
+	suspend fun completeSignup(baseUrl: String, appToken: String, handle: String, code: String): Response<Authentication> {
+		val url = "$baseUrl${Routes.completeSignup}"
+		return apiService.completeSignup(url, appToken, SignupCompleteBody(handle, code))
+	}
+
+	suspend fun invite(baseUrl: String, appToken: String, handle: String, metaData: String?, senderUserId: String?): Response<String> {
+		val url = "$baseUrl${Routes.invite}"
+		return apiService.invite(url, appToken, InviteBody(handle, metaData, senderUserId))
+	}
+
+	suspend fun register(baseUrl: String, appToken: String, handle: String, password: String, metaData: String?, code: String): Response<Authentication> {
+		val url = "$baseUrl${Routes.register}"
+		return apiService.register(url, appToken, RegisterBody(handle, password.md5, metaData, code))
 	}
 }

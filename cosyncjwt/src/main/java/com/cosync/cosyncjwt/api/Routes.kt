@@ -24,15 +24,16 @@ package com.cosync.cosyncjwt.api
 class Routes {
 	companion object {
 		private const val apiRoute = "/api/appuser"
-		
+
+		const val getApplication = "$apiRoute/getApplication"
 		const val login = "$apiRoute/login"
 		const val loginComplete = "$apiRoute/loginComplete"
 		const val loginAnonymous = "$apiRoute/loginAnonymous"
 		const val forgotPassword = "$apiRoute/forgotPassword"
 		const val signup = "$apiRoute/signup"
-		const val register = "$apiRoute/register"
 		const val completeSignup = "$apiRoute/completeSignup"
-		const val getApplication = "$apiRoute/getApplication"
+		const val invite = "$apiRoute/invite"
+		const val register = "$apiRoute/register"
 
 		const val getUser = "$apiRoute/getUser"
 		const val resetPassword = "$apiRoute/resetPassword"
@@ -45,6 +46,5 @@ class Routes {
 		const val userNameAvailable = "$apiRoute/userNameAvailable"
 		const val setUserName = "$apiRoute/setUserName"
 		const val deleteAccount = "$apiRoute/deleteAccount"
-		const val invite = "$apiRoute/invite"
 	}
 }

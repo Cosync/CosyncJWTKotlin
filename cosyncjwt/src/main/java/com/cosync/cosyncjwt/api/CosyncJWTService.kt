@@ -23,18 +23,26 @@ package com.cosync.cosyncjwt.api
 import com.cosync.cosyncjwt.model.App
 import com.cosync.cosyncjwt.model.Authentication
 import com.cosync.cosyncjwt.model.User
+import com.google.gson.JsonObject
 import retrofit2.Response
 import retrofit2.http.*
 
 data class LoginBody(val handle: String, val password: String)
 data class LoginCompleteBody(val loginToken: String, val code: String)
 data class LoginAnonymousBody(val handle: String)
+data class SignupBody(val handle: String, val password: String, val metaData: String?)
+data class SignupCompleteBody(val handle: String, val code: String)
+data class InviteBody(val handle: String, val metaData: String?, val senderUserId: String?)
+data class RegisterBody(val handle: String, val password: String, val metaData: String?, val code: String)
 data class ForgotPasswordBody(val handle: String)
 data class ResetPasswordBody(val handle: String, val password: String, val code: String)
 data class ChangePasswordBody(val newPassword: String, val password: String)
 data class SetPhoneBody(val phone: String)
 data class VerifyPhoneBody(val code: String)
 data class SetTwoFactorVerificationBody(val twoFactor: String)
+data class SetUserMetadataBody(val metaData: String)
+data class SetUserNameBody(val userName: String)
+data class DeleteAccountBody(val handle: String, val password: String)
 
 interface CosyncJWTService {
 	@POST//("/api/appuser/login")
@@ -70,6 +78,34 @@ interface CosyncJWTService {
 		@Url url: String,
 		@Header("app-token") appToken: String,
 	): Response<App>
+
+	@POST//("/api/appuser/signup")
+	suspend fun signup(
+		@Url url: String,
+		@Header("app-token") appToken: String,
+		@Body body: SignupBody
+	): Response<Authentication>
+
+	@POST//("/api/appuser/completeSignup")
+	suspend fun completeSignup(
+		@Url url: String,
+		@Header("app-token") appToken: String,
+		@Body body: SignupCompleteBody
+	): Response<Authentication>
+
+	@POST//("/api/appuser/invite")
+	suspend fun invite(
+		@Url url: String,
+		@Header("app-token") appToken: String,
+		@Body body: InviteBody
+	): Response<String>
+
+	@POST//("/api/appuser/register")
+	suspend fun register(
+		@Url url: String,
+		@Header("app-token") appToken: String,
+		@Body body: RegisterBody
+	): Response<Authentication>
 
 	@GET//("/api/appuser/getUser")
 	suspend fun getUser(
@@ -117,5 +153,33 @@ interface CosyncJWTService {
 		@Url url: String,
 		@Header("access-token") accessToken: String,
 		@Body body: SetTwoFactorVerificationBody
+	): Response<String>
+
+	@POST//("/api/appuser/setUserMetadata")
+	suspend fun setUserMetadata(
+		@Url url: String,
+		@Header("access-token") accessToken: String,
+		@Body body: SetUserMetadataBody
+	): Response<String>
+
+	@GET//("/api/appuser/userNameAvailable")
+	suspend fun userNameAvailable(
+		@Url url: String,
+		@Header("access-token") accessToken: String,
+		@Query("userName") userName: String
+	): Response<JsonObject>
+
+	@POST//("/api/appuser/setUserName")
+	suspend fun setUserName(
+		@Url url: String,
+		@Header("access-token") accessToken: String,
+		@Body body: SetUserNameBody
+	): Response<String>
+
+	@POST//("/api/appuser/deleteAccount")
+	suspend fun deleteAccount(
+		@Url url: String,
+		@Header("access-token") accessToken: String,
+		@Body body: DeleteAccountBody
 	): Response<String>
 }
