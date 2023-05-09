@@ -76,7 +76,7 @@ interface CosyncJWTService {
 	@GET//("/api/appuser/getApplication")
 	suspend fun getApplication(
 		@Url url: String,
-		@Header("app-token") appToken: String,
+		@Header("app-token") appToken: String
 	): Response<App>
 
 	@POST//("/api/appuser/signup")
@@ -110,7 +110,7 @@ interface CosyncJWTService {
 	@GET//("/api/appuser/getUser")
 	suspend fun getUser(
 		@Url url: String,
-		@Header("access-token") accessToken: String,
+		@Header("access-token") accessToken: String
 	): Response<User>
 
 	@POST//("/api/appuser/resetPassword")

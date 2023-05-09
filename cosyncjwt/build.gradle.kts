@@ -52,6 +52,7 @@ dependencies {
 	testImplementation("junit:junit:4.13.2")
 	androidTestImplementation("androidx.test.ext:junit:1.2.0-alpha01")
 	androidTestImplementation("androidx.test.espresso:espresso-core:3.6.0-alpha01")
+	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -80,7 +81,7 @@ afterEvaluate {
 			create<MavenPublication>("cosyncjwt") {
 				groupId = "com.cosync"
 				artifactId = "cosyncjwt"
-				version = "0.0.6"
+				version = "0.1.2"
 
 				artifact("$buildDir/outputs/aar/cosyncjwt-release.aar")
 				artifact(sourcesJar)

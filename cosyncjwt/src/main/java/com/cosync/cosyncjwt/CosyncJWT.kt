@@ -67,12 +67,14 @@ class CosyncJWT constructor(private val context: Context) {
 	 * @param	appToken			App Token
 	 * @param	cosyncRestAddress	Cosync Rest Address
 	 */
+	@Synchronized
 	fun configure(appToken: String, cosyncRestAddress: String? = "") {
 		this.appToken = appToken
 		this.cosyncRestAddress = cosyncRestAddress.takeUnless { it.isNullOrEmpty() } ?: context.getString(
 			R.string.defaultCosyncRestAddress)
 	}
 
+	@Synchronized
 	fun isLoggedIn(): Boolean {
 		return jwt.isNotEmpty() && accessToken.isNotEmpty()
 	}
@@ -163,7 +165,7 @@ class CosyncJWT constructor(private val context: Context) {
 			if (appToken.isEmpty() || cosyncRestAddress.isEmpty()) {
 				Result.failure(CosyncJWTException("Not configured yet"))
 			} else {
-				val response = authRepository.getApplication(cosyncRestAddress, accessToken)
+				val response = authRepository.getApplication(cosyncRestAddress, appToken)
 				if (response.isSuccessful) {
 					response.body()?.let {
 						Result.success(it)
@@ -178,11 +180,11 @@ class CosyncJWT constructor(private val context: Context) {
 	}
 
 	private fun isPasswordValid(password: String, app: App): Boolean {
-		val minLength = app.passwordMinLength // minimum length of password
-		val minUpperCase = app.passwordMinUpper // minimum number of uppercase letters
-		val minLowerCase = app.passwordMinLower // minimum number of lowercase letters
-		val minDigits = app.passwordMinDigit // minimum number of digits
-		val minSpecialChars = app.passwordMinSpecial // minimum number of special characters
+		val minLength = app.passwordMinLength!! // minimum length of password
+		val minUpperCase = app.passwordMinUpper!! // minimum number of uppercase letters
+		val minLowerCase = app.passwordMinLower!! // minimum number of lowercase letters
+		val minDigits = app.passwordMinDigit!! // minimum number of digits
+		val minSpecialChars = app.passwordMinSpecial!! // minimum number of special characters
 
 		val upperCaseRegex = Regex("[A-Z]")
 		val lowerCaseRegex = Regex("[a-z]")
@@ -208,7 +210,7 @@ class CosyncJWT constructor(private val context: Context) {
 				if (appResponse.isSuccessful) {
 					appResponse.body()?.let { app ->
 						var passwordValid = true
-						if (app.passwordFilter) {
+						if (app.passwordFilter == true) {
 							passwordValid = isPasswordValid(password, app)
 						}
 						if (passwordValid) {
@@ -278,7 +280,7 @@ class CosyncJWT constructor(private val context: Context) {
 				if (appResponse.isSuccessful) {
 					appResponse.body()?.let { app ->
 						var passwordValid = true
-						if (app.passwordFilter) {
+						if (app.passwordFilter == true) {
 							passwordValid = isPasswordValid(password, app)
 						}
 						if (passwordValid) {
